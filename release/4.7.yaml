@@ -114,7 +114,7 @@ capacity:
       - OperatorHub
     - name: Operator SDK
       capacity: 5
-      components: 
+      components:
       - Operator SDK
     - name: Image Registry
       capacity: 3
@@ -156,6 +156,9 @@ rules:
   labels:
     refuse:
       - do-not-merge/
+  labels:
+    allow:
+      - qe-approved/
 # Classifiers describe how much score points a single pull request should get. (0-1)
 # Score impact the position of a PR in merge queue.
 classifiers:

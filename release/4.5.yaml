@@ -12,6 +12,9 @@ rules:
     # Refuse lists pull request label prefixes that when found the pull request will be automatically "skipped" (reason will be recorded)
     refuse:
       - do-not-merge/hold
+  labels:
+    allow:
+      - qe-approved/
 # Capacity describe the QE capacity for the "next" week per QE group.
 capacity:
   maxDefaultPicksPerComponent: 5
@@ -114,7 +117,7 @@ capacity:
       - OperatorHub
     - name: Operator SDK
       capacity: 5
-      components: 
+      components:
       - Operator SDK
     - name: Image Registry
       capacity: 3

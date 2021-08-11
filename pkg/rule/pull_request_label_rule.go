@@ -13,13 +13,24 @@ type PullRequestLabelRule struct {
 }
 
 func (p *PullRequestLabelRule) Evaluate(pullRequest *github.PullRequest) ([]string, bool) {
-	result := []string{}
+	reasons := []string{}
+	var skip bool
 	for _, l := range pullRequest.Issue.Labels {
 		for _, c := range p.Config.RefuseOnLabel {
 			if strings.HasPrefix(l.GetName(), c) {
-				result = append(result, fmt.Sprintf("skipping because %q label found", l.GetName()))
+				reasons = append(reasons, fmt.Sprintf("skipping because %q label found", l.GetName()))
+				skip = true
+			}
+		}
+		if skip {
+			continue
+		}
+		for _, c := range p.Config.AllowOnLabel {
+			if strings.HasSuffix(l.GetName(), c) {
+				reasons = append(reasons, fmt.Sprintf("picking because %q label found", l.GetName()))
+				skip = false
 			}
 		}
 	}
-	return result, len(result) == 0
+	return reasons, skip
 }

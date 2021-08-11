@@ -3,6 +3,7 @@ package rule
 import "github.com/openshift/patchmanager/pkg/github"
 
 type Ruler interface {
+	// Evaluate returns a list of reasons and a bool which indicates whether to skip the pull request.
 	Evaluate(*github.PullRequest) ([]string, bool)
 }
 
@@ -11,18 +12,18 @@ type MultiRuler struct {
 }
 
 func (m *MultiRuler) Evaluate(pullRequest *github.PullRequest) ([]string, bool) {
-	decisions := []string{}
-	result := true
+	reasons := []string{}
+	var skip bool
 	for i := range m.rulers {
-		messages, pass := m.rulers[i].Evaluate(pullRequest)
-		if !pass {
-			decisions = append(decisions, messages...)
-			result = false
+		r, d := m.rulers[i].Evaluate(pullRequest)
+		if len(r) > 0 {
+			reasons = append(reasons, r...)
+			skip = d
 		}
 	}
-	return decisions, result
+	return reasons, skip
 }
 
-func NewMultiRuler(rullers ...Ruler) Ruler {
-	return &MultiRuler{rulers: rullers}
+func NewMultiRuler(rulers ...Ruler) Ruler {
+	return &MultiRuler{rulers: rulers}
 }

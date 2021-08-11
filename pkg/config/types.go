@@ -25,7 +25,11 @@ type RulesConfig struct {
 }
 
 type PullRequestLabelRuleConfig struct {
+	// RefuseOnLabel are the labels that causes a PR to be skipped
 	RefuseOnLabel []string `yaml:"refuse"`
+	// AllowedOnLabel are the labels that causes a PR to be picked.
+	// This has lower priority than RefuseOnLabel.
+	AllowOnLabel []string `yaml:"allow"`
 }
 
 type KeywordsClassifierConfig map[string]float32

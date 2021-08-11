@@ -181,11 +181,21 @@ func (r *runOptions) Run(ctx context.Context) error {
 	candidates := []v1.Candidate{}
 
 	pullsToClassify := []*github.PullRequest{}
+	var decision string
+	skipped := 0
+	picked := 0
 	for i, p := range pullsToReview {
-		decisions, ok := r.rules.Evaluate(pullsToReview[i])
-		if ok {
+		reasons, skip := r.rules.Evaluate(pullsToReview[i])
+		if len(reasons) == 0 {
 			pullsToClassify = append(pullsToClassify, pullsToReview[i])
 			continue
+		}
+		if skip {
+			decision = "skip"
+			skipped++
+		} else {
+			decision = "pick"
+			picked++
 		}
 		candidates = append(candidates, v1.Candidate{
 			PMScore:        p.Bug().PMScore,
@@ -195,11 +205,12 @@ func (r *runOptions) Run(ctx context.Context) error {
 			BugNumber:      fmt.Sprintf("%d", p.Bug().ID),
 			Component:      componentName(p.Bug().Component),
 			Severity:       p.Bug().Severity,
-			Decision:       "skip",
-			DecisionReason: strings.Join(decisions, ","),
+			Decision:       decision,
+			DecisionReason: strings.Join(reasons, ","),
 		})
 	}
-	klog.Infof("%d pull requests refused by the rules", len(candidates))
+	klog.Infof("%d pull requests skipped by the rules", skipped)
+	klog.Infof("%d pull requests picked by the rules", picked)
 
 	// order the pending pull requests by score
 	sort.Slice(pullsToClassify, func(i, j int) bool {
